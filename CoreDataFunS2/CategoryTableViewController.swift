@@ -7,16 +7,43 @@
 //
 
 import UIKit
+import CoreData
+
+// MARK: - Core Data
+// we've made a DataModel that abstracts a SQLite Database for us
+// there is some Core Data jargon to learn
+// Core Data Entity <-> Swift Type <-> database table
+// Core Data Attribute <-> Swift property <-> database field
+// therefore a row in a table is like an object of a type
+// all of the underlying data store queries and methods are managed through an interface of type NSPersistentContainer
+// NSPersistentContainer has a NSManagedObjectContext which is like an intelligent scratchoad
+// think of the context like the staging area of a git repo
+// saving the context is like committing in git, its when our changes are actually written to disk (to the DB)
+
+// MARK: - CRUD: Common Database Operations
+// a persistent container abstracts a data store for us
+// by default the data store for core data is a SQLite database
+// we work with a persistent container's context instead of with the persistent container directly
+// we will use the context for common DB style operations
+// CRUD: create, read/retrieve, update, destroy/delete
+// start with the C
 
 class CategoryTableViewController: UITableViewController {
     
-    var categoryArray = ["Home", "Work", "Family"]
+    //var categoryArray = ["Home", "Work", "Family"]
+    
+    // we need a reference to the context
+    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+    var categoryArray = [Category]()
 
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         
         self.navigationItem.leftBarButtonItem = self.editButtonItem
+        
+        let documentsDirectoryURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        print(documentsDirectoryURL)
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -29,7 +56,7 @@ class CategoryTableViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
         let category = categoryArray[indexPath.row]
-        cell.textLabel?.text = category
+        cell.textLabel?.text = category.name
         
         return cell
     }
@@ -59,8 +86,12 @@ class CategoryTableViewController: UITableViewController {
         
         let action = UIAlertAction(title: "Create", style: .default) { (alertAction) in
             let text = alertTextField.text!
-            self.categoryArray.append(text)
-            self.tableView.reloadData()
+            // CREATE
+            // make a Category using context
+            let newCategory = Category(context: self.context)
+            newCategory.name = text
+            self.categoryArray.append(newCategory)
+            self.saveCategories()
         }
         
         alert.addAction(action)
@@ -81,6 +112,17 @@ class CategoryTableViewController: UITableViewController {
             let category = categoryArray[selectedIndexPath.row]
             itemsTableVC.category = category
         }
+    }
+    
+    func saveCategories() {
+        // we need to save the context
+        do {
+            try context.save() // like a git commit
+        }
+        catch {
+            print("Error saving categories \(error)")
+        }
+        tableView.reloadData()
     }
 }
 
