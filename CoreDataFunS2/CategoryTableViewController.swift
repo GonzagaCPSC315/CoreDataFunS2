@@ -44,6 +44,8 @@ class CategoryTableViewController: UITableViewController {
         
         let documentsDirectoryURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
         print(documentsDirectoryURL)
+        
+        loadCategories()
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -121,6 +123,22 @@ class CategoryTableViewController: UITableViewController {
         }
         catch {
             print("Error saving categories \(error)")
+        }
+        tableView.reloadData()
+    }
+    
+    // READ of CRUD
+    func loadCategories() {
+        // we need to "request" the categories from the database (using the persistent container's context
+        let request: NSFetchRequest<Category> = Category.fetchRequest()
+        // when you execute a SQL SELECT statement, you usually filter the rows you want back in your query using a WHERE clause
+        // to do this with core data, we use a "predicate" and attach it to our request
+        // for categories, we want all rows in the category table, so we don't need to filter, but we will for items later...
+        do {
+            categoryArray = try context.fetch(request)
+        }
+        catch {
+            print("Error loading categories \(error)")
         }
         tableView.reloadData()
     }
