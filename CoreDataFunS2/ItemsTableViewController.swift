@@ -9,7 +9,7 @@
 import UIKit
 import CoreData
 
-class ItemsTableViewController: UITableViewController {
+class ItemsTableViewController: UITableViewController, UISearchBarDelegate {
     
     var category: Category? = nil {
         // Mark: lab #6
@@ -116,13 +116,19 @@ class ItemsTableViewController: UITableViewController {
     }
     
     // MARK: - lab #6
-    func loadItems() {
+    func loadItems(withPredicate predicate: NSPredicate? = nil) {
         let request: NSFetchRequest<Item> = Item.fetchRequest()
         // predicates are used to filter objects
         // they represent logical conditions that evaluate to true or false
         let categoryPredicate = NSPredicate(format: "parentCategory.name MATCHES %@", category!.name!)
-        // %@ is a placeholder for a value of any type
-        request.predicate = categoryPredicate
+        if let pred = predicate {
+            let compoundPredicate = NSCompoundPredicate(andPredicateWithSubpredicates: [categoryPredicate, pred])
+            request.predicate = compoundPredicate
+        }
+        else {
+            // %@ is a placeholder for a value of any type
+            request.predicate = categoryPredicate
+        }
         
         do {
             itemArray = try context.fetch(request)
@@ -133,4 +139,25 @@ class ItemsTableViewController: UITableViewController {
         tableView.reloadData()
     }
     
+    // MARK: - Search Bar Delegate Method(s)
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        // called everytime the text in the search bar changes (e.g. as the user types)
+        print(searchText)
+        if searchText != "" {
+            performSearch(searchBar: searchBar)
+        }
+        else {
+            // search bar is empty
+            searchBar.resignFirstResponder()
+            loadItems()
+        }
+    }
+    
+    func performSearch(searchBar: UISearchBar) {
+        if let text = searchBar.text {
+            // we need a predicate to filter items by text
+            let predicate = NSPredicate(format: "name CONTAINS[cd] %@", text)
+            loadItems(withPredicate: predicate)
+        }
+    }
 }
