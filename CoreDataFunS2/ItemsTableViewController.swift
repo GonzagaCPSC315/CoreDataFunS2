@@ -46,6 +46,7 @@ class ItemsTableViewController: UITableViewController {
 
         let item = itemArray[indexPath.row]
         cell.textLabel?.text = item.name
+        cell.accessoryType = item.done ? .checkmark : .none
 
         return cell
     }
@@ -71,6 +72,14 @@ class ItemsTableViewController: UITableViewController {
         tableView.reloadData()
     }
     
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        // called whenever the user selects (taps) on a row
+        let item = itemArray[indexPath.row]
+        // UPDATE of CRUD
+        item.done = !item.done
+        saveItems()
+        tableView.deselectRow(at: indexPath, animated: true)
+    }
     
     @IBAction func addBarButtonPressed(_ sender: UIBarButtonItem) {
         var alertTextField = UITextField()
@@ -86,6 +95,7 @@ class ItemsTableViewController: UITableViewController {
             let newItem = Item(context: self.context)
             newItem.name = text
             newItem.parentCategory = self.category
+            newItem.done = false
             self.itemArray.append(newItem)
             self.saveItems()
         }
