@@ -65,6 +65,14 @@ class CategoryTableViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
+            // MARK: lab #15
+            // PSEUDOCODE SOLUTION
+            // fetch all of the items that have this
+            // category as their parent
+            // delete those items
+            // then delete the category
+            // write your code here to do this
+            
             // we first want to delete the Category at indexPath.row from our context
             // then later... we want to save our context so the deletion persists
             context.delete(categoryArray[indexPath.row])
